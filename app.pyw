@@ -9,14 +9,15 @@ screen.title("CSC212 Form")
 score_list = []
 
 def eda(): 
+    
     '''
     Calculate the maximum, minimum and average score to a csv file
     '''
-    calc = pd.read_csv('score_sheet.csv')
-    maximum_score = calc.Score.max()
-    average = calc.Score.mean()
-    minimum_score = calc.Score.min()
-    row_of_max_score = calc[calc['Score']== maximum_score]
+    student_detail_dataframe = pd.read_csv('score_sheet.csv')
+    maximum_score = student_detail_dataframe.Score.max()
+    average = student_detail_dataframe.Score.mean()
+    minimum_score = student_detail_dataframe.Score.min()
+    row_of_max_score = student_detail_dataframe[student_detail_dataframe['Score']== maximum_score]
     
     with open("eda.csv","w",newline="\n") as File:
         writer = csv.writer(File)
@@ -25,9 +26,9 @@ def eda():
     '''
     Get the best student from the maximum score and send to a csv file
     '''
-    row_of_max_score.to_csv('best_student.csv', index=False)
+    row_of_max_score.to_csv('best_student.csv', index=False, header=False)
     
-    
+        
 def get_info(): 
     '''
     get the student input details from the GUI
@@ -47,10 +48,14 @@ def get_info():
     
     return student 
 
-with open("score_sheet.csv","w",newline="\n") as File:
+from os.path import exists
+file_exists = exists("score_sheet.csv")
+
+if not file_exists:
+    with open("score_sheet.csv","w",newline="\n") as File:
         writer = csv.writer(File)
         writer.writerow(["Firstname", "Lastname", "Matric", "Score"])
-File.close()
+    File.close()
     
 def student_info():
     '''
@@ -58,14 +63,12 @@ def student_info():
     '''
     student_detail = get_info()
     print(f"Firstname: {student_detail['firstName']} \nLastname: {student_detail['lastName']} \nMatric Number: {student_detail['matric']} \nScore: {student_detail['score']} \n ")
-    
-  
+   
     with open("score_sheet.csv","a",newline="\n") as File:
         writer = csv.writer(File)
         writer.writerow([student_detail['firstName'], student_detail['lastName'], student_detail['matric'], student_detail['score']])
     File.close()
-    
-           
+          
     print(f"{str(student_detail['matric'])} has been recorded successfully")
     
     eda()
@@ -74,9 +77,8 @@ def student_info():
 def stats():
     
     lists = get_info()
-    
     '''
-    get the scores of those that passed and send to a csv file
+    get the scores of those that failed and send to a csv file
     '''
     if lists["score"] < 40:   
         with open("failed.csv","a",newline="\n") as File:
@@ -85,14 +87,16 @@ def stats():
         File.close()
         
     '''
-    get the scores of those that failed and send to a csv file
+    get the scores of those that passed and send to a csv file
     '''
-    if lists["score"] > 40: 
+    if lists["score"] > 70: 
         with open("passed.csv","a",newline="\n") as File:
             writer = csv.writer(File)
             writer.writerow([lists["firstName"], lists["lastName"], lists["matric"], lists["score"]])
         File.close()
 
+def close():
+    screen.quit()
 
 #GUI
 
@@ -107,7 +111,6 @@ matric_number_label = Label(text = "Matric Number")
 matric_number_label.place(x = 10, y = 190)
 score_label = Label(text = "Score")
 score_label.place(x = 10, y = 260)
-
 
 firstname = StringVar()
 lastname = StringVar()
@@ -124,7 +127,9 @@ score_entry = Entry(textvariable = score)
 score_entry.place(x = 10, y = 290)
 
 submit = Button(screen, text = "Submit", width = "15", height = "1", command = lambda: [student_info(), eda(), stats()])
-submit.place(x = 10, y = 330)
+submit.place(x = 100, y = 330)
+quit = Button(screen, text = "Quit", width = "5", height = "1", bg= "red", command = close)
+quit.place(x = 430, y = 450)
 
 
 screen.mainloop()
